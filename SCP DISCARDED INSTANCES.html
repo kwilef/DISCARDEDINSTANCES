@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style id="webmakerstyle">
+.server-link {
+    cursor: pointer;
+    color: #d4d4d4;
+}
+
+.server-link:hover {
+    color: white;
+    text-shadow: 0 0 4px white;
+}
+
+#errorScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: #0000aa;
+    color: white;
+
+    font-family: "Courier New", monospace;
+
+    padding: 40px;
+    box-sizing: border-box;
+
+    overflow-y: auto;
+
+    display: none;
+
+    z-index: 999999;
+}
+
+.error-text {
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 18px;
+}
+
+.return-button {
+    margin-top: 40px;
+
+    background: #c0c0c0;
+    color: #0000aa;
+
+    border: none;
+
+    padding: 10px 20px;
+
+    font-family: "Courier New", monospace;
+
+    cursor: pointer;
+}
+
+.return-button:hover {
+    background: white;
+}
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[ARCHIVE TITLE HERE]</title>
+<style>
+:root {
+    --bg: #050505;
+    --panel: #101010;
+    --border: #2b2b2b;
+    --text: #d7d7d7;
+    --accent: #9b111e;
+    --accent-soft: #5a0b12;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Consolas, monospace;
+}
+
+#app {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.header {
+    border-bottom: 1px solid var(--border);
+    padding: 25px;
+    background: linear-gradient(to bottom, #111, #080808);
+}
+
+.archive-title {
+    font-size: 38px;
+    letter-spacing: 4px;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.archive-description {
+    color: #b0b0b0;
+    max-width: 900px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.threat-level {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+    background: rgba(155, 17, 30, 0.2);
+    color: #ff8c96;
+    margin-top: 10px;
+}
+
+.search-container {
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border);
+    background: #0c0c0c;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.search-box {
+    width: 100%;
+    padding: 14px;
+    background: #050505;
+    border: 1px solid var(--border);
+    color: white;
+    font-size: 15px;
+    outline: none;
+}
+
+.search-box:focus {
+    border-color: var(--accent);
+}
+
+.search-results {
+    margin-top: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    border: 1px solid var(--border);
+}
+
+.search-result {
+    padding: 10px;
+    border-bottom: 1px solid #1d1d1d;
+    cursor: pointer;
+    background: #0a0a0a;
+}
+
+.search-result:hover {
+    background: #151515;
+}
+
+.chunk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    padding: 25px;
+}
+
+.chunk-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 18px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.chunk-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.chunk-title {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.chunk-subtitle {
+    color: #888;
+    font-size: 12px;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal {
+    width: 92%;
+    max-width: 1100px;
+    max-height: 90vh;
+    background: #0b0b0b;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #111;
+}
+
+.modal-title {
+    font-size: 20px;
+    color: white;
+}
+
+.close-button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    border-color: var(--accent);
+}
+
+.document-list {
+    overflow-y: auto;
+    padding: 0;
+}
+
+.document-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid #1a1a1a;
+    cursor: pointer;
+    transition: 0.1s ease;
+}
+
+.document-item:hover {
+    background: #141414;
+}
+
+.document-number {
+    color: #888;
+    margin-right: 12px;
+}
+
+.reader-view {
+    padding: 25px;
+    overflow-y: auto;
+    max-height: calc(90vh - 80px);
+}
+
+.document-title-input {
+    width: 100%;
+    background: #050505;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 12px;
+    font-size: 24px;
+    margin-bottom: 18px;
+}
+
+.document-content-input {
+    width: 100%;
+    min-height: 500px;
+    resize: vertical;
+    background: #050505;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 18px;
+    font-family: Consolas, monospace;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.document-meta {
+    margin-bottom: 20px;
+    color: #888;
+    font-size: 13px;
+}
+
+.footer-note {
+    padding: 25px;
+    color: #666;
+    text-align: center;
+    border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<div id="app">
+    <div class="header">
+        <div class="archive-title">SCP XXXX Continuity Govorner</div>
+        <div class="archive-description">
+            The Continuity Govorner is a device created by Dr Sherman Loel in 1983 to affect the CD and CCI of specific instances enabling Instance Pruning and Enforcement
+        </div>
+        <div class="threat-level">THREAT LEVEL: ELUCID</div>
+    </div>
+
+    <div class="search-container">
+        <input
+            type="text"
+            class="search-box"
+            id="searchBox"
+            placeholder="Search document titles..."
+        >
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <div class="chunk-grid" id="chunkGrid"></div>
+
+    <div class="footer-note">
+        ARCHIVE FILE#1000  max data overflow shunted to server <span class="server-link" onclick="openErrorScreen()">3.88e8e</span>
+      files liscensed under slf®2002-2026 V1.12u
+    </div>
+</div>
+
+<div class="overlay" id="chunkOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="chunkModalTitle">ARCHIVE CHUNK</div>
+            <button class="close-button" onclick="closeChunkModal()">CLOSE</button>
+        </div>
+        <div class="document-list" id="documentList"></div>
+    </div>
+</div>
+
+<div class="overlay" id="readerOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="readerTitle">DOCUMENT</div>
+            <button class="close-button" onclick="closeReader()">CLOSE</button>
+        </div>
+        <div class="reader-view">
+            <div class="document-meta" id="documentMeta"></div>
+
+            <input
+                type="text"
+                id="documentTitleInput"
+                class="document-title-input"
+                placeholder="PLACE DOCUMENT TITLE HERE"
+            >
+
+            <textarea
+                id="documentContentInput"
+                class="document-content-input"
+                placeholder="PASTE TEXT HERE"
+            ></textarea>
+        </div>
+    </div>
+</div>
+
+<script>
+/*
+========================================
+EDITING GUIDE
+========================================
+
+1. EACH DOCUMENT IS COMPLETELY SEPARATE.
+2. Editing document 000 will NOT affect 001, 483, etc.
+3. Titles and contents are stored independently.
+4. Replace titles/content manually in the ARCHIVE array.
+5. This is optimized for low lag.
+6. Only one modal is rendered at a time.
+7. No heavy frameworks are used.
+8. Easy to convert to Wikidot later.
+
+========================================
+WHERE TO EDIT DOCUMENTS
+========================================
+
+Find this format below:
+
+archive[0].title = "YOUR TITLE";
+archive[0].content = `YOUR CONTENT`;
+
+You can edit every file independently.
+
+========================================
+*/
+
+const archive = [];
+
+/*
+========================================
+GENERATE 1000 REAL DOCUMENT OBJECTS
+========================================
+*/
+
+for (let i = 0; i < 1000; i++) {
+    archive.push({
+        id: i.toString().padStart(3, '0'),
+        title: `PLACE TITLE FOR FILE ${i.toString().padStart(3, '0')} HERE`,
+        content: `PASTE TEXT HERE FOR FILE ${i.toString().padStart(3, '0')}`
+    });
+}
+
+/*
+========================================
+EXAMPLE CUSTOM EDITS
+DELETE THESE IF YOU WANT
+========================================
+*/
+
+archive[0].title = "[FILE 000 TITLE HERE]";
+archive[0].content = `
+So is this where edits are made?
+`;
+
+archive[483].title = "[FILE 483 TITLE HERE]";
+archive[483].content = `
+PASTE TEXT HERE
+`;
+
+archive[999].title = "[FILE 999 TITLE HERE]";
+archive[999].content = `
+PASTE TEXT HERE
+`;
+
+/*
+========================================
+GENERATE CHUNKS
+========================================
+*/
+
+const chunkGrid = document.getElementById('chunkGrid');
+const documentList = document.getElementById('documentList');
+const chunkOverlay = document.getElementById('chunkOverlay');
+const readerOverlay = document.getElementById('readerOverlay');
+const chunkModalTitle = document.getElementById('chunkModalTitle');
+const readerTitle = document.getElementById('readerTitle');
+const documentMeta = document.getElementById('documentMeta');
+const documentTitleInput = document.getElementById('documentTitleInput');
+const documentContentInput = document.getElementById('documentContentInput');
+const searchBox = document.getElementById('searchBox');
+const searchResults = document.getElementById('searchResults');
+
+let currentDocument = null;
+
+for (let chunk = 0; chunk < 10; chunk++) {
+    const start = chunk * 100;
+    const end = start + 99;
+
+    const card = document.createElement('div');
+    card.className = 'chunk-card';
+
+    card.innerHTML = `
+        <div class="chunk-title">
+            FILES ${start.toString().padStart(3, '0')}-${end.toString().padStart(3, '0')}
+        </div>
+        <div class="chunk-subtitle">
+            100 DOCUMENTS INDEXED
+        </div>
+    `;
+
+    card.addEventListener('click', () => openChunk(chunk));
+
+    chunkGrid.appendChild(card);
+}
+
+/*
+========================================
+OPEN CHUNK
+========================================
+*/
+
+function openChunk(chunkNumber) {
+    documentList.innerHTML = '';
+
+    const start = chunkNumber * 100;
+    const end = start + 99;
+
+    chunkModalTitle.textContent = `FILES ${start
+        .toString()
+        .padStart(3, '0')}-${end.toString().padStart(3, '0')}`;
+
+    for (let i = start; i <= end; i++) {
+        const doc = archive[i];
+
+        const item = document.createElement('div');
+        item.className = 'document-item';
+
+        item.innerHTML = `
+            <span class="document-number">${doc.id}</span>
+            <span>${doc.title}</span>
+        `;
+
+        item.addEventListener('click', () => openDocument(i));
+
+        documentList.appendChild(item);
+    }
+
+    chunkOverlay.style.display = 'flex';
+}
+
+function closeChunkModal() {
+    chunkOverlay.style.display = 'none';
+}
+
+/*
+========================================
+OPEN DOCUMENT
+========================================
+*/
+
+function openDocument(index) {
+    currentDocument = index;
+
+    const doc = archive[index];
+
+    readerTitle.textContent = `${doc.id} — ${doc.title}`;
+
+    documentMeta.textContent = `DOCUMENT ID: ${doc.id}`;
+
+    documentTitleInput.value = doc.title;
+    documentContentInput.value = doc.content;
+
+    readerOverlay.style.display = 'flex';
+}
+
+function closeReader() {
+    saveCurrentDocument();
+    readerOverlay.style.display = 'none';
+}
+
+/*
+========================================
+SAVE DOCUMENT
+========================================
+*/
+
+function saveCurrentDocument() {
+    if (currentDocument === null) return;
+
+    archive[currentDocument].title = documentTitleInput.value;
+    archive[currentDocument].content = documentContentInput.value;
+}
+
+/*
+========================================
+AUTO SAVE
+========================================
+*/
+
+documentTitleInput.addEventListener('input', saveCurrentDocument);
+documentContentInput.addEventListener('input', saveCurrentDocument);
+
+/*
+========================================
+SEARCH SYSTEM
+========================================
+*/
+
+searchBox.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+
+    searchResults.innerHTML = '';
+
+    if (!query) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    const results = archive.filter(doc =>
+        doc.title.toLowerCase().includes(query)
+    );
+
+    results.slice(0, 100).forEach(doc => {
+        const result = document.createElement('div');
+        result.className = 'search-result';
+
+        result.innerHTML = `
+            <strong>${doc.id}</strong> — ${doc.title}
+        `;
+
+        result.addEventListener('click', () => {
+            openDocument(parseInt(doc.id));
+            searchResults.style.display = 'none';
+        });
+
+        searchResults.appendChild(result);
+    });
+
+    searchResults.style.display = results.length ? 'block' : 'none';
+});
+
+/*
+========================================
+CLOSE MODALS ON BACKDROP CLICK
+========================================
+*/
+
+chunkOverlay.addEventListener('click', function (e) {
+    if (e.target === chunkOverlay) {
+        closeChunkModal();
+    }
+});
+
+readerOverlay.addEventListener('click', function (e) {
+    if (e.target === readerOverlay) {
+        closeReader();
+    }
+});
+
+/*
+========================================
+ESC KEY SUPPORT
+========================================
+*/
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        closeChunkModal();
+        closeReader();
+    }
+});
+</script>
+  <div id="errorScreen">
+
+<pre class="error-text">
+808 SERVER ERROR
+
+A fatal exception 0E has occurred at 0028:C0011E36
+in VXD NETFAIL(01) + 000019D6.
+
+The current host connection has been terminated.
+
+SERVER IP NOT FOUND.
+
+REMOTE ARCHIVE RESPONSE FAILED.
+PACKET TRACE LOST.
+NODE STATUS: OFFLINE
+
+The system has been halted to prevent damage
+to the host environment.
+
+Attempting reconnection will likely fail.
+
+Technical information:
+
+*** STOP: 0x00000808
+(0x887A0006,0x00000000,0x00000000)
+
+HOST MACHINE: UNKNOWN
+UPLINK STATUS: DEAD
+ARCHIVE RESPONSE: NULL
+</pre>
+
+<button onclick="closeErrorScreen()" class="return-button">
+Return to Host Connection
+</button>
+
+</div>
+</body>
+</html>
+
+
+
+<script>function openErrorScreen() {
+    document.getElementById("errorScreen").style.display = "block";
+    document.body.style.overflow = "hidden";
+}
+
+function closeErrorScreen() {
+    document.getElementById("errorScreen").style.display = "none";
+    document.body.style.overflow = "auto";
+}
+//# sourceURL=userscript.js
+</script>
+</body>
+</html>
